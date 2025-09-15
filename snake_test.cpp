@@ -26,6 +26,47 @@ TEST(SnakeBehaviour, NextHeadDown) {
   
 }
 
+TEST(SnakeBehaviour, RandomCellNotInSnake) {
+    std::deque<std::pair<int,int>> snake;
+    snake.push_back({0,0});
+    snake.push_back({0,1});
+    snake.push_back({0,2});
+
+    // generate 100 cells to be safe
+    for (int i=0;i<100;i++) {
+        auto cell = random_cell_excluding(snake);
+        // cell should not be in snake
+        EXPECT_EQ(std::find(snake.begin(),snake.end(),cell),snake.end());
+        // cell should be within board bounds
+        EXPECT_GE(cell.first,0);
+        EXPECT_LE(cell.first,9);
+        EXPECT_GE(cell.second,0);
+        EXPECT_LE(cell.second,9);
+    }
+}
+
+TEST(SnakeBehaviour, SpeedDecreasesEvery10Foods) {
+    int speed=500;
+    for(int foods=1;foods<=30;foods++) {
+        int newSpeed = compute_new_speed(foods,speed);
+        if(foods%10==0 && speed>100) {
+            EXPECT_EQ(newSpeed,speed-50);
+            speed=newSpeed; // update speed for next loop
+        } else {
+            EXPECT_EQ(newSpeed,speed);
+        }
+    }
+}
+
+// Optional: test that poison never spawns on snake as well
+TEST(SnakeBehaviour, PoisonCellNotInSnake) {
+    std::deque<std::pair<int,int>> snake;
+    for(int i=0;i<5;i++) snake.push_back({i,i});
+    for(int i=0;i<50;i++){
+        auto poison = random_cell_excluding(snake);
+        EXPECT_EQ(std::find(snake.begin(),snake.end(),poison),snake.end());
+    }
+
 
 /** 
  * g++ -o my_tests snake_test.cpp -lgtest -lgtest_main -pthread;
